@@ -2,42 +2,56 @@ package main
 
 import (
 	"fmt"
-	"sync"
-	"sync/atomic"
+	"math/rand"
+	"strconv"
 	"time"
-
-	"github.com/panjf2000/ants/v2"
 )
 
-var sum int32
+const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-func myFunc(i interface{}) {
-	n := i.(int32)
-	atomic.AddInt32(&sum, n)
-	fmt.Printf("run with %d\n", n)
+func RandStringBytesRmndr(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letters[rand.Int63()%int64(len(letters))]
+	}
+	return string(b)
 }
 
-func demoFunc() {
-	time.Sleep(10 * time.Millisecond)
-	fmt.Println("Hello World!")
+func checkProcess(args *CheckProcessArgs) CheckResult {
+	return CheckResultFree
 }
 
 func main() {
-	defer ants.Release()
 
-	runTimes := 10000
+	lines := make([]string, 0)
 
-	// Use the common pool.
-	var wg sync.WaitGroup
-	syncCalculateSum := func() {
-		demoFunc()
-		wg.Done()
+	for i := 0; len(lines) < 10_000_000; i++ {
+		lines = append(lines, strconv.FormatInt(int64(i), 10)+":"+RandStringBytesRmndr(4))
 	}
-	for i := 0; i < runTimes; i++ {
-		wg.Add(1)
-		_ = ants.Submit(syncCalculateSum)
+
+	checker, err := NewCheckerBuilder().WithCombosFromLines(lines).SetCheckProcess(checkProcess).SetThreads(100).Build()
+
+	if err != nil {
+		panic(err)
 	}
-	wg.Wait()
-	fmt.Printf("running goroutines: %d\n", ants.Running())
-	fmt.Printf("finish all tasks.\n")
+
+	start := time.Now()
+
+	fmt.Printf("Started at %s \n", start.Format(time.RFC3339))
+
+	go checker.Start()
+
+	for {
+		fmt.Printf("Progress: %d/%d | CPM: %d | ElapsedTime: %s \n", checker.Infos.GetChecked(), checker.Infos.GetTotal(), checker.Infos.GetCpm(), checker.Infos.GetElapsedTime().String())
+
+		time.Sleep(time.Second)
+
+		if checker.state == CheckerStateEnded {
+			break
+		}
+	}
+
+	end := time.Since(start)
+
+	fmt.Printf("Free: %d, Hit: %d, Locked: %d, Invalid: %d, Error: %d, Total: %d, Time: %s", checker.Infos.GetFree(), checker.Infos.GetHit(), checker.Infos.GetLocked(), checker.Infos.GetInvalid(), checker.Infos.GetError(), checker.Infos.GetChecked(), end)
 }
