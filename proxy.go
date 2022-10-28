@@ -67,5 +67,5 @@ func NewProxyFromString(raw string, protocol string) (*Proxy, error) {
 }
 
 func (p *Proxy) ToString() string {
-	return p.Protocol + "://" + p.Host + ":" + string(p.Port)
+	return p.Protocol + "://" + p.Host + ":" + strconv.Itoa(p.Port)
 }
