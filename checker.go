@@ -2,9 +2,12 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/panjf2000/ants/v2"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"sync"
 )
 
@@ -68,22 +71,49 @@ func (checker *Checker) internalCheckProcess(args *CheckProcessArgs) CheckResult
 	return result
 }
 
-/*
-func OutputProcess(combo *Combo, checkResult CheckResult) {
-	outputText := []byte(combo.Raw)
+// InternalOutputProcess TODO: Make this function thread safe & make the path one time computed
+func InternalOutputProcess(combo *Combo, checkResult CheckResult) {
+	outputData := []byte(combo.Raw)
 
 	currentPath, err := os.Getwd()
 
-	outputPath := os.Getwd() + "/output.txt"
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputDirectory := currentPath + "/output"
+
+	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
+		if err := os.Mkdir(outputDirectory, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	outputPath := outputDirectory
+
+	shouldOutput := false
 
 	switch checkResult {
 	case CheckResultInvalid:
+		outputData = append([]byte("[Invalid] "), outputData...)
+		outputPath += "/invalid.txt"
 	case CheckResultFree:
+		shouldOutput = true
+		outputData = append([]byte("[Free] "), outputData...)
+		outputPath += "/free.txt"
 	case CheckResultHit:
+		shouldOutput = true
+		outputData = append([]byte("[Hit] "), outputData...)
+		outputPath += "/hit.txt"
 	case CheckResultLocked:
+		outputData = append([]byte("[Locked] "), outputData...)
+		outputPath += "/locked.txt"
+	}
+
+	if shouldOutput {
+		writeLineToFile(outputPath, outputData)
 	}
 }
-*/
 
 func (checker *Checker) getNextClient() *http.Client {
 
@@ -185,6 +215,30 @@ func (checker *Checker) Resume() (bool, error) {
 func (checker *Checker) SetThreads(threads int) {
 	checker.Options.Threads = threads
 	checker.workersPool.Tune(threads)
+}
+
+func writeLineToFile(path string, data []byte) error {
+	file, err := os.OpenFile("example.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		fmt.Println("Could not open example.txt")
+		return err
+	}
+
+	defer file.Close()
+
+	line := append(data, []byte("\n")...)
+
+	_, err2 := file.WriteString(string(line))
+
+	if err2 != nil {
+		fmt.Println("Could not write text to example.txt")
+
+	} else {
+		fmt.Println("Operation successful! Text has been appended to example.txt")
+	}
+
+	return nil
 }
 
 func newChecker(options *CheckerOptions, proxies []*Proxy, combos []*Combo, checkProcess CheckProcess, outputProcess OutputProcess, logProcess LogProcess) *Checker {
