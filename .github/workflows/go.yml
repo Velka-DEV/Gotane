@@ -8,7 +8,9 @@ on:
     branches: [ "main", "dev" ]
   pull_request:
     branches: [ "main", "dev" ]
-
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - '**.md'
 jobs:
 
   build:
