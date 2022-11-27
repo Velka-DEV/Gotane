@@ -22,6 +22,7 @@ type Checker struct {
 	combos      []*Combo
 	state       CheckerState
 	clientIndex int
+	outputPath  string
 
 	logProcess    LogProcess
 	checkProcess  CheckProcess
@@ -49,6 +50,8 @@ func (checker *Checker) internalCheckProcess(args *CheckProcessArgs) CheckResult
 
 	if checker.outputProcess != nil {
 		checker.outputProcess(checkedComboArgs)
+	} else {
+		checker.internalOutputProcess(args.Combo, result)
 	}
 
 	switch result {
@@ -71,43 +74,23 @@ func (checker *Checker) internalCheckProcess(args *CheckProcessArgs) CheckResult
 	return result
 }
 
-// InternalOutputProcess TODO: Make this function thread safe & make the path one time computed
-func InternalOutputProcess(combo *Combo, checkResult CheckResult) {
+func (checker *Checker) internalOutputProcess(combo *Combo, checkResult CheckResult) {
 	outputData := []byte(combo.Raw)
 
-	currentPath, err := os.Getwd()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	outputDirectory := currentPath + "/output"
-
-	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
-		if err := os.Mkdir(outputDirectory, os.ModePerm); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	outputPath := outputDirectory
+	outputPath := checker.outputPath + "/" + checkResult.String() + ".txt"
 
 	shouldOutput := false
 
 	switch checkResult {
-	case CheckResultInvalid:
-		outputData = append([]byte("[Invalid] "), outputData...)
-		outputPath += "/invalid.txt"
 	case CheckResultFree:
 		shouldOutput = true
-		outputData = append([]byte("[Free] "), outputData...)
-		outputPath += "/free.txt"
+		break
 	case CheckResultHit:
 		shouldOutput = true
-		outputData = append([]byte("[Hit] "), outputData...)
-		outputPath += "/hit.txt"
+		break
 	case CheckResultLocked:
-		outputData = append([]byte("[Locked] "), outputData...)
-		outputPath += "/locked.txt"
+		shouldOutput = true
+		break
 	}
 
 	if shouldOutput {
@@ -154,6 +137,31 @@ func (checker *Checker) Start() (bool, error) {
 	}
 
 	checker.Infos.StartUpdater()
+
+	currentPath, err := os.Getwd()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputDirectory := currentPath + "/output"
+
+	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
+		if err := os.Mkdir(outputDirectory, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	outputDirectory = outputDirectory + "/" + checker.Infos.startDate.Format("02-01-2006_15-04-05")
+
+	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
+		if err := os.Mkdir(outputDirectory, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	checker.outputPath = outputDirectory
+
 	checker.workersPool = pool
 	checker.state = CheckerStateRunning
 
@@ -218,10 +226,10 @@ func (checker *Checker) SetThreads(threads int) {
 }
 
 func writeLineToFile(path string, data []byte) error {
-	file, err := os.OpenFile("example.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	if err != nil {
-		fmt.Println("Could not open example.txt")
+		fmt.Println("Could not open file: ", err)
 		return err
 	}
 
@@ -232,10 +240,8 @@ func writeLineToFile(path string, data []byte) error {
 	_, err2 := file.WriteString(string(line))
 
 	if err2 != nil {
-		fmt.Println("Could not write text to example.txt")
+		fmt.Println("Could not " + string(data) + " text to " + path + "(" + err2.Error() + ")")
 
-	} else {
-		fmt.Println("Operation successful! Text has been appended to example.txt")
 	}
 
 	return nil
