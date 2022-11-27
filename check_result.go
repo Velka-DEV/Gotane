@@ -21,3 +21,22 @@ const (
 	// CheckResultLocked is the result when the combo is locked
 	CheckResultLocked
 )
+
+func (c CheckResult) String() string {
+	switch c {
+	case CheckResultInvalid:
+		return "invalid"
+	case CheckResultRetry:
+		return "retry"
+	case CheckResultError:
+		return "error"
+	case CheckResultFree:
+		return "free"
+	case CheckResultHit:
+		return "hit"
+	case CheckResultLocked:
+		return "locked"
+	}
+
+	return "unknown"
+}
