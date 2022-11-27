@@ -1,4 +1,4 @@
-package main
+package gotane
 
 type CheckerOptions struct {
 	// MaxConcurrentChecks is the maximum number of concurrent checks
