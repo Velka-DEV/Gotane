@@ -1,4 +1,4 @@
-package main
+package gotane
 
 type CheckedComboArgs struct {
 	Combo  *Combo
