@@ -18,6 +18,7 @@ func RandStringBytesRmndr(n int) string {
 }
 
 func checkProcess(args *CheckProcessArgs) CheckResult {
+	time.Sleep(time.Second * 1)
 	return CheckResultFree
 }
 
