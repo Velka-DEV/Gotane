@@ -1,10 +1,13 @@
-package main
+package gotane
 
 import (
 	"errors"
+	"fmt"
 	"github.com/panjf2000/ants/v2"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"sync"
 )
 
@@ -19,6 +22,7 @@ type Checker struct {
 	combos      []*Combo
 	state       CheckerState
 	clientIndex int
+	outputPath  string
 
 	logProcess    LogProcess
 	checkProcess  CheckProcess
@@ -46,6 +50,8 @@ func (checker *Checker) internalCheckProcess(args *CheckProcessArgs) CheckResult
 
 	if checker.outputProcess != nil {
 		checker.outputProcess(checkedComboArgs)
+	} else {
+		checker.internalOutputProcess(args.Combo, result)
 	}
 
 	switch result {
@@ -68,22 +74,29 @@ func (checker *Checker) internalCheckProcess(args *CheckProcessArgs) CheckResult
 	return result
 }
 
-/*
-func OutputProcess(combo *Combo, checkResult CheckResult) {
-	outputText := []byte(combo.Raw)
+func (checker *Checker) internalOutputProcess(combo *Combo, checkResult CheckResult) {
+	outputData := []byte(combo.Raw)
 
-	currentPath, err := os.Getwd()
+	outputPath := checker.outputPath + "/" + checkResult.String() + ".txt"
 
-	outputPath := os.Getwd() + "/output.txt"
+	shouldOutput := false
 
 	switch checkResult {
-	case CheckResultInvalid:
 	case CheckResultFree:
+		shouldOutput = true
+		break
 	case CheckResultHit:
+		shouldOutput = true
+		break
 	case CheckResultLocked:
+		shouldOutput = true
+		break
+	}
+
+	if shouldOutput {
+		writeLineToFile(outputPath, outputData)
 	}
 }
-*/
 
 func (checker *Checker) getNextClient() *http.Client {
 
@@ -124,6 +137,31 @@ func (checker *Checker) Start() (bool, error) {
 	}
 
 	checker.Infos.StartUpdater()
+
+	currentPath, err := os.Getwd()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputDirectory := currentPath + "/output"
+
+	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
+		if err := os.Mkdir(outputDirectory, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	outputDirectory = outputDirectory + "/" + checker.Infos.startDate.Format("02-01-2006_15-04-05")
+
+	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
+		if err := os.Mkdir(outputDirectory, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	checker.outputPath = outputDirectory
+
 	checker.workersPool = pool
 	checker.state = CheckerStateRunning
 
@@ -185,6 +223,28 @@ func (checker *Checker) Resume() (bool, error) {
 func (checker *Checker) SetThreads(threads int) {
 	checker.Options.Threads = threads
 	checker.workersPool.Tune(threads)
+}
+
+func writeLineToFile(path string, data []byte) error {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		fmt.Println("Could not open file: ", err)
+		return err
+	}
+
+	defer file.Close()
+
+	line := append(data, []byte("\n")...)
+
+	_, err2 := file.WriteString(string(line))
+
+	if err2 != nil {
+		fmt.Println("Could not " + string(data) + " text to " + path + "(" + err2.Error() + ")")
+
+	}
+
+	return nil
 }
 
 func newChecker(options *CheckerOptions, proxies []*Proxy, combos []*Combo, checkProcess CheckProcess, outputProcess OutputProcess, logProcess LogProcess) *Checker {
