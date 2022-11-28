@@ -7,7 +7,7 @@ In fact, it will manage:
 * [x] Http clients creation and distribution (support for backconnect proxies and all protocols). The library make reuse of the clients for better performances (Thanks [@Laiteux](https://github.com/Laiteux))
 * [x] Output (directory, whether to output invalids or not, console colors, captures and more...)
 * [ ] Console title (hits, free hits, estimated hits, percentages, checked per minute, elapsed/remaining time and more...) (To be added)
-* [-] Check pause/resume/end functions using hotkeys (Hotkeys to be added, actually only control methods are avaiable. Feel free to create yourself your bindings or make contribution to the project)
+* [x] Check pause/resume/end functions using hotkeys (Hotkeys to be added, actually only control methods are avaiable. Feel free to create yourself your bindings or make contribution to the project)
 
 And more... See the code itself or the folder for a better overview.
 
