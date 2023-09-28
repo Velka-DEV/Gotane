@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -60,7 +61,11 @@ func (c *Checker) internalOutputProcess(args *CheckProcessArgs, result *CheckRes
 	}
 
 	if shouldOutput {
-		WriteResultToFile(result, c.Infos)
+		err := WriteResultToFile(result, c.Infos)
+		if err != nil {
+			// Display error
+			fmt.Println(err)
+		}
 	}
 }
 
@@ -118,7 +123,10 @@ func (c *Checker) Start() {
 
 		client := c.clientPool.Get()
 		c.waitGroup.Add(1)
-		c.workerPool.Invoke(&CheckProcessArgs{Combo: combo, Client: client})
+		err := c.workerPool.Invoke(&CheckProcessArgs{Combo: combo, Client: client})
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 
