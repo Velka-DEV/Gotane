@@ -128,12 +128,18 @@ func (c *Checker) Start() {
 			fmt.Println(err)
 		}
 	}
+
+	go func() {
+		c.waitGroup.Wait()
+		c.Stop()
+	}()
 }
 
 // StartAndWait starts the checker and waits for it to finish
 func (c *Checker) StartAndWait() {
 	c.Start()
 	c.waitGroup.Wait()
+	c.Stop()
 }
 
 // Stop stops the checker
