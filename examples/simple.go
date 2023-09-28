@@ -18,7 +18,7 @@ func checkProcess(args *core.CheckProcessArgs) *core.CheckResult {
 	}
 }
 
-func Simple() {
+func main() {
 
 	combos, err := core.LoadCombosFromFile("combos.txt")
 
