@@ -1,4 +1,4 @@
-module github.com/Velka-DEV/Gotane/v2
+module github.com/Velka-DEV/Gotane
 
 go 1.21.0
 

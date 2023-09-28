@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/Velka-DEV/Gotane/v2/pkg/core"
+	"github.com/Velka-DEV/Gotane/pkg/core"
 )
 
 func checkProcess(args *core.CheckProcessArgs) *core.CheckResult {
