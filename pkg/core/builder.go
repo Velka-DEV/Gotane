@@ -1,4 +1,4 @@
-package pkg
+package core
 
 type CheckerBuilder struct {
 	config *CheckerConfig

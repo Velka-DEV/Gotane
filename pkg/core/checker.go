@@ -1,10 +1,11 @@
-package pkg
+package core
 
 import (
 	"fmt"
-	"github.com/panjf2000/ants/v2"
 	"sync"
 	"sync/atomic"
+
+	"github.com/panjf2000/ants/v2"
 )
 
 type CheckerConfig struct {
