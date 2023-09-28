@@ -66,7 +66,11 @@ func (c *CheckerInfo) Remaining() time.Duration {
 	if c.Cpm == 0 {
 		return 0
 	}
-	return time.Duration(float64(c.Total-c.Checked)/c.Cpm) * time.Minute
+
+	remainingChecks := c.Total - c.Checked
+	remainingMinutes := float64(remainingChecks) / c.Cpm
+
+	return time.Duration(remainingMinutes*60) * time.Second
 }
 
 func (c *CheckerInfo) ETA() time.Time {
