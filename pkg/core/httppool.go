@@ -22,6 +22,10 @@ func NewHTTPClientPool() *HTTPClientPool {
 }
 
 func NewHTTPClientPoolWithProxies(proxies []string, scheme string) *HTTPClientPool {
+	if len(proxies) == 0 {
+		panic("proxies are empty")
+	}
+
 	var clients []ClientWithProxy
 
 	for _, proxy := range proxies {
