@@ -1,4 +1,4 @@
-package core
+package pkg
 
 type ComboQueue struct {
 	combos chan *Combo
