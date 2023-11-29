@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
@@ -32,8 +33,20 @@ func WriteResultToFile(result *CheckResult, info *CheckerInfo) error {
 
 	sb.WriteString(result.Combo.String())
 
-	for key, capture := range result.Captures {
-		sb.WriteString(fmt.Sprintf("|%s=%s", key, capture))
+	// Create a slice to hold the keys of the map
+	keys := make([]string, 0, len(result.Captures))
+
+	// Add all keys to the slice
+	for key := range result.Captures {
+		keys = append(keys, key)
+	}
+
+	// Sort the keys
+	sort.Strings(keys)
+
+	// Iterate over the sorted keys
+	for _, key := range keys {
+		sb.WriteString(fmt.Sprintf("|%s=%s", key, result.Captures[key]))
 	}
 
 	sb.WriteString(fmt.Sprintf("|%s", info.StartTime.Format("2006-01-02 15:04:05")))
