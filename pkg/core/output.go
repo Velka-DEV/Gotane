@@ -45,8 +45,13 @@ func WriteResultToFile(result *CheckResult, info *CheckerInfo) error {
 	sort.Strings(keys)
 
 	// Iterate over the sorted keys
-	for _, key := range keys {
-		sb.WriteString(fmt.Sprintf("|%s=%s", key, result.Captures[key]))
+	for i, key := range keys {
+
+		if i == 0 {
+			sb.WriteString(fmt.Sprintf("|%s=%s", key, result.Captures[key]))
+			continue
+		}
+		sb.WriteString(fmt.Sprintf(",%s=%s", key, result.Captures[key]))
 	}
 
 	sb.WriteString(fmt.Sprintf("|%s", info.StartTime.Format("2006-01-02 15:04:05")))
