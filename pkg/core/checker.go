@@ -145,6 +145,14 @@ func (c *Checker) StartAndWait() {
 // Stop stops the checker
 func (c *Checker) Stop() {
 	c.Infos.State = CheckerStateStopped
+
+	// Release the worker pool
+	if c.workerPool != nil {
+		c.workerPool.Release()
+	}
+
+	// Wait for all running tasks to complete
+	c.waitGroup.Wait()
 }
 
 // IsRunning returns true if the checker is running
