@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"os"
 	"sync"
 	"sync/atomic"
 
@@ -9,11 +10,13 @@ import (
 )
 
 type CheckerConfig struct {
-	Threads       int
-	OutputFree    bool
-	OutputInvalid bool
-	OutputLocked  bool
-	OutputUnknown bool
+	Threads         int
+	OutputToFile    bool
+	OutputDirectory string
+	OutputFree      bool
+	OutputInvalid   bool
+	OutputLocked    bool
+	OutputUnknown   bool
 }
 
 type CheckProcessArgs struct {
@@ -43,6 +46,10 @@ func (c *Checker) internalOutputProcess(args *CheckProcessArgs, result *CheckRes
 		c.outputProcess(args, result)
 	}
 
+	if !c.Config.OutputToFile {
+		return
+	}
+
 	shouldOutput := false
 
 	switch result.Status {
@@ -60,8 +67,16 @@ func (c *Checker) internalOutputProcess(args *CheckProcessArgs, result *CheckRes
 		shouldOutput = true
 	}
 
+	var outputBasePath string
+
+	if c.Config.OutputDirectory == "" {
+		outputBasePath, _ = os.Getwd()
+	} else {
+		outputBasePath = c.Config.OutputDirectory
+	}
+
 	if shouldOutput {
-		err := WriteResultToFile(result, c.Infos)
+		err := WriteResultToFile(result, c.Infos, outputBasePath)
 		if err != nil {
 			// Display error
 			fmt.Println(err)

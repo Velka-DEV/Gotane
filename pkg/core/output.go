@@ -11,9 +11,8 @@ import (
 // GetOutputPath returns the path to the output file for a given status and time
 // If directories do not exist, they will be created
 // Example: {currentDirectory}/output/free/2021-01-01_16-34-24.txt
-func createOutputPath(status CheckStatus, time time.Time) string {
-	currentDirectory, _ := os.Getwd()
-	outputDirectory := fmt.Sprintf("%s/output", currentDirectory)
+func createOutputPath(status CheckStatus, time time.Time, basePath string) string {
+	outputDirectory := fmt.Sprintf("%s/output", basePath)
 	statusDirectory := fmt.Sprintf("%s/%s", outputDirectory, status.String())
 	filePath := fmt.Sprintf("%s/%s.txt", statusDirectory, time.Format("2006-01-02-15-04-05"))
 
@@ -28,7 +27,7 @@ func createOutputPath(status CheckStatus, time time.Time) string {
 	return filePath
 }
 
-func WriteResultToFile(result *CheckResult, info *CheckerInfo) error {
+func WriteResultToFile(result *CheckResult, info *CheckerInfo, basePath string) error {
 	sb := strings.Builder{}
 
 	sb.WriteString(result.Combo.String())
@@ -56,7 +55,7 @@ func WriteResultToFile(result *CheckResult, info *CheckerInfo) error {
 
 	sb.WriteString(fmt.Sprintf("|%s", info.StartTime.Format("2006-01-02 15:04:05")))
 
-	return writeLineToFile(createOutputPath(result.Status, info.StartTime), []byte(sb.String()))
+	return writeLineToFile(createOutputPath(result.Status, info.StartTime, basePath), []byte(sb.String()))
 }
 
 func writeLineToFile(path string, data []byte) error {
