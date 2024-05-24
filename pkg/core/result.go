@@ -18,7 +18,7 @@ type CheckResult struct {
 	Combo    *Combo
 	Proxy    string
 	Status   CheckStatus
-	Captures map[string]string
+	Captures map[string]interface{}
 }
 
 func (r CheckResult) String() string {

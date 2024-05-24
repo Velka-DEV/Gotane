@@ -12,7 +12,7 @@ func checkProcess(args *core.CheckProcessArgs) *core.CheckResult {
 	return &core.CheckResult{
 		Combo:  args.Combo,
 		Status: core.CheckStatusFree,
-		Captures: map[string]string{
+		Captures: map[string]interface{}{
 			"points": "49",
 		},
 	}
