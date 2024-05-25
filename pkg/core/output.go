@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -11,20 +12,18 @@ import (
 // GetOutputPath returns the path to the output file for a given status and time
 // If directories do not exist, they will be created
 // Example: {currentDirectory}/output/free/2021-01-01_16-34-24.txt
-func createOutputPath(status CheckStatus, time time.Time, basePath string) string {
-	outputDirectory := fmt.Sprintf("%s/output", basePath)
-	statusDirectory := fmt.Sprintf("%s/%s", outputDirectory, status.String())
-	filePath := fmt.Sprintf("%s/%s.txt", statusDirectory, time.Format("2006-01-02-15-04-05"))
+func createOutputPath(status CheckStatus, t time.Time, basePath string) (string, error) {
+	outputDirectory := filepath.Join(basePath, "output")
+	statusDirectory := filepath.Join(outputDirectory, status.String())
+	filePath := filepath.Join(statusDirectory, fmt.Sprintf("%s.txt", t.Format("2006-01-02-15-04-05")))
 
-	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
-		os.Mkdir(outputDirectory, 0755)
+	// Use os.MkdirAll to create all necessary directories
+	err := os.MkdirAll(statusDirectory, 0755)
+	if err != nil {
+		return "", err
 	}
 
-	if _, err := os.Stat(statusDirectory); os.IsNotExist(err) {
-		os.Mkdir(statusDirectory, 0755)
-	}
-
-	return filePath
+	return filePath, nil
 }
 
 func WriteResultToFile(result *CheckResult, info *CheckerInfo, basePath string) error {
@@ -55,7 +54,13 @@ func WriteResultToFile(result *CheckResult, info *CheckerInfo, basePath string) 
 
 	sb.WriteString(fmt.Sprintf("|%s", info.StartTime.Format("2006-01-02 15:04:05")))
 
-	return writeLineToFile(createOutputPath(result.Status, info.StartTime, basePath), []byte(sb.String()))
+	outputPath, err := createOutputPath(result.Status, info.StartTime, basePath)
+
+	if err != nil {
+		return err
+	}
+
+	return writeLineToFile(outputPath, []byte(sb.String()))
 }
 
 func writeLineToFile(path string, data []byte) error {
