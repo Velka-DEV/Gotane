@@ -46,10 +46,10 @@ func WriteResultToFile(result *CheckResult, info *CheckerInfo, basePath string) 
 	for i, key := range keys {
 
 		if i == 0 {
-			sb.WriteString(fmt.Sprintf("|%s=%s", key, result.Captures[key]))
+			sb.WriteString(fmt.Sprintf("|%s=%v", key, result.Captures[key]))
 			continue
 		}
-		sb.WriteString(fmt.Sprintf(",%s=%s", key, result.Captures[key]))
+		sb.WriteString(fmt.Sprintf(",%s=%v", key, result.Captures[key]))
 	}
 
 	sb.WriteString(fmt.Sprintf("|%s", info.StartTime.Format("2006-01-02 15:04:05")))
