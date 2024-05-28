@@ -1,20 +1,42 @@
 package core
 
+import "time"
+
+type TransportConfig struct {
+	DisableKeepAlive    bool
+	MaxIdleConns        int
+	MaxIdleConnsPerHost int
+	IdleConnTimeout     time.Duration
+}
+
 type CheckerBuilder struct {
-	config *CheckerConfig
-	queue  *ComboQueue
-	pool   *HTTPClientPool
+	config          *CheckerConfig
+	transportConfig *TransportConfig
+	queue           *ComboQueue
+	pool            *HTTPClientPool
 
 	checkProcess  CheckProcess
 	outputProcess OutputProcess
 }
 
 func NewCheckerBuilder() *CheckerBuilder {
-	return &CheckerBuilder{}
+	return &CheckerBuilder{
+		transportConfig: &TransportConfig{
+			DisableKeepAlive:    false,
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 2,
+			IdleConnTimeout:     90 * time.Second,
+		},
+	}
 }
 
 func (b *CheckerBuilder) WithConfig(config *CheckerConfig) *CheckerBuilder {
 	b.config = config
+	return b
+}
+
+func (b *CheckerBuilder) WithTransportConfig(transportConfig *TransportConfig) *CheckerBuilder {
+	b.transportConfig = transportConfig
 	return b
 }
 
@@ -29,7 +51,7 @@ func (b *CheckerBuilder) WithCombos(combos []*Combo) *CheckerBuilder {
 }
 
 func (b *CheckerBuilder) WithProxies(proxies []string, scheme string) *CheckerBuilder {
-	b.pool = NewHTTPClientPoolWithProxies(proxies, scheme, b.config.DisableKeepAlive)
+	b.pool = NewHTTPClientPoolWithProxies(proxies, scheme, b.transportConfig)
 	return b
 }
 
@@ -57,7 +79,7 @@ func (b *CheckerBuilder) Build() *Checker {
 	}
 
 	if b.pool == nil {
-		b.pool = NewHTTPClientPool(b.config.DisableKeepAlive)
+		b.pool = NewHTTPClientPool(b.transportConfig)
 	}
 
 	return NewChecker(

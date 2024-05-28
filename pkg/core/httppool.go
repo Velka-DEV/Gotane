@@ -17,13 +17,18 @@ type HTTPClientPool struct {
 	index   int
 }
 
-func NewHTTPClientPool(disableKeepAlive bool) *HTTPClientPool {
+func NewHTTPClientPool(config *TransportConfig) *HTTPClientPool {
 	return &HTTPClientPool{clients: []ClientWithProxy{{Client: &http.Client{
-		Transport: &http.Transport{DisableKeepAlives: disableKeepAlive},
+		Transport: &http.Transport{
+			DisableKeepAlives:   config.DisableKeepAlive,
+			MaxIdleConns:        config.MaxIdleConns,
+			MaxIdleConnsPerHost: config.MaxIdleConnsPerHost,
+			IdleConnTimeout:     config.IdleConnTimeout,
+		},
 	}, Proxy: ""}}}
 }
 
-func NewHTTPClientPoolWithProxies(proxies []string, scheme string, disableKeepAlive bool) *HTTPClientPool {
+func NewHTTPClientPoolWithProxies(proxies []string, scheme string, config *TransportConfig) *HTTPClientPool {
 	if len(proxies) == 0 {
 		panic("proxies are empty")
 	}
@@ -38,8 +43,11 @@ func NewHTTPClientPoolWithProxies(proxies []string, scheme string, disableKeepAl
 
 		client := &http.Client{
 			Transport: &http.Transport{
-				Proxy:             http.ProxyURL(proxyURL),
-				DisableKeepAlives: disableKeepAlive,
+				Proxy:               http.ProxyURL(proxyURL),
+				DisableKeepAlives:   config.DisableKeepAlive,
+				MaxIdleConns:        config.MaxIdleConns,
+				MaxIdleConnsPerHost: config.MaxIdleConnsPerHost,
+				IdleConnTimeout:     config.IdleConnTimeout,
 			},
 		}
 		clients = append(clients, ClientWithProxy{Client: client, Proxy: proxy})
