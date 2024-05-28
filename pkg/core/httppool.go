@@ -17,11 +17,13 @@ type HTTPClientPool struct {
 	index   int
 }
 
-func NewHTTPClientPool() *HTTPClientPool {
-	return &HTTPClientPool{clients: []ClientWithProxy{{Client: &http.Client{}, Proxy: ""}}}
+func NewHTTPClientPool(disableKeepAlive bool) *HTTPClientPool {
+	return &HTTPClientPool{clients: []ClientWithProxy{{Client: &http.Client{
+		Transport: &http.Transport{DisableKeepAlives: disableKeepAlive},
+	}, Proxy: ""}}}
 }
 
-func NewHTTPClientPoolWithProxies(proxies []string, scheme string) *HTTPClientPool {
+func NewHTTPClientPoolWithProxies(proxies []string, scheme string, disableKeepAlive bool) *HTTPClientPool {
 	if len(proxies) == 0 {
 		panic("proxies are empty")
 	}
@@ -36,7 +38,8 @@ func NewHTTPClientPoolWithProxies(proxies []string, scheme string) *HTTPClientPo
 
 		client := &http.Client{
 			Transport: &http.Transport{
-				Proxy: http.ProxyURL(proxyURL),
+				Proxy:             http.ProxyURL(proxyURL),
+				DisableKeepAlives: disableKeepAlive,
 			},
 		}
 		clients = append(clients, ClientWithProxy{Client: client, Proxy: proxy})

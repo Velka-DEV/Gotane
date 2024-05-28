@@ -11,14 +11,15 @@ import (
 )
 
 type CheckerConfig struct {
-	Threads         int
-	WaitBeforeRetry time.Duration
-	OutputToFile    bool
-	OutputDirectory string
-	OutputFree      bool
-	OutputInvalid   bool
-	OutputLocked    bool
-	OutputUnknown   bool
+	Threads          int
+	DisableKeepAlive bool
+	WaitBeforeRetry  time.Duration
+	OutputToFile     bool
+	OutputDirectory  string
+	OutputFree       bool
+	OutputInvalid    bool
+	OutputLocked     bool
+	OutputUnknown    bool
 }
 
 type CheckProcessArgs struct {

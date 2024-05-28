@@ -29,7 +29,7 @@ func (b *CheckerBuilder) WithCombos(combos []*Combo) *CheckerBuilder {
 }
 
 func (b *CheckerBuilder) WithProxies(proxies []string, scheme string) *CheckerBuilder {
-	b.pool = NewHTTPClientPoolWithProxies(proxies, scheme)
+	b.pool = NewHTTPClientPoolWithProxies(proxies, scheme, b.config.DisableKeepAlive)
 	return b
 }
 
@@ -57,7 +57,7 @@ func (b *CheckerBuilder) Build() *Checker {
 	}
 
 	if b.pool == nil {
-		b.pool = NewHTTPClientPool()
+		b.pool = NewHTTPClientPool(b.config.DisableKeepAlive)
 	}
 
 	return NewChecker(
