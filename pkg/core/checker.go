@@ -5,12 +5,14 @@ import (
 	"os"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/panjf2000/ants/v2"
 )
 
 type CheckerConfig struct {
 	Threads         int
+	WaitBeforeRetry time.Duration
 	OutputToFile    bool
 	OutputDirectory string
 	OutputFree      bool
@@ -96,6 +98,7 @@ func (c *Checker) internalCheckProcess(args *CheckProcessArgs) *CheckResult {
 	case CheckStatusRetry:
 		newClient := c.clientPool.Get()
 		args.Client = newClient
+		time.Sleep(c.Config.WaitBeforeRetry)
 		return c.internalCheckProcess(args)
 	case CheckStatusFree:
 		atomic.AddUint64(&c.Infos.Free, 1)
