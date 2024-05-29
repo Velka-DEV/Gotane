@@ -118,6 +118,10 @@ func (c *Checker) internalCheckProcess(args *CheckProcessArgs) *CheckResult {
 // Start starts the checker
 func (c *Checker) Start() {
 	pool, err := ants.NewPoolWithFunc(c.Config.Threads, func(args interface{}) {
+		for c.Infos.State == CheckerStatePaused {
+			time.Sleep(100 * time.Millisecond)
+		}
+
 		checkArgs := args.(*CheckProcessArgs)
 		c.internalCheckProcess(checkArgs)
 		c.waitGroup.Done()
@@ -182,13 +186,11 @@ func (c *Checker) IsRunning() bool {
 // It will not stop the current checks, but will prevent new ones from starting
 func (c *Checker) Pause() {
 	c.Infos.State = CheckerStatePaused
-	c.workerPool.Tune(0)
 }
 
 // Resume resumes the checker
 func (c *Checker) Resume() {
 	c.Infos.State = CheckerStateRunning
-	c.workerPool.Tune(c.Config.Threads)
 }
 
 // SetThreads sets the number of threads, and adjusts the worker pool accordingly
