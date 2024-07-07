@@ -1,4 +1,4 @@
-# Gotane: High performance credential stuffing library ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Velka-DEV/Gotane/Go) [![Latest release](https://img.shields.io/github/v/release/Velka-DEV/Gotane?color=blue&style=flat-square&include_prereleases)](https://github.com/Velka-DEV/Gotane/releases) ![GitHub](https://img.shields.io/github/license/Velka-DEV/Gotane)
+# Gotane: High performance credential stuffing library ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Velka-DEV/Gotane/go.yml?branch=main) [![Latest release](https://img.shields.io/github/v/release/Velka-DEV/Gotane?color=blue&style=flat-square&include_prereleases)](https://github.com/Velka-DEV/Gotane/releases) ![GitHub](https://img.shields.io/github/license/Velka-DEV/Gotane)
 
 Gotane is a Go library for pentesting web apps against credential stuffing attacks library written by Velka.
 
